@@ -5,6 +5,7 @@
 **A standalone retro chess game in C++ / Qt 6** — pixel art inspired by the Apple IIe
 and the Sargon II/III era.
 
+[![CI](https://github.com/nkralev76-hue/retro-chess-qt/actions/workflows/ci.yml/badge.svg)](https://github.com/nkralev76-hue/retro-chess-qt/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Qt](https://img.shields.io/badge/Qt-6.2%2B-41c520)](https://www.qt.io/)
 [![C++](https://img.shields.io/badge/C%2B%2B-17-00599c)](https://isocpp.org/)
@@ -165,6 +166,23 @@ Covers perft from the initial position to depth 4, Kiwipete to depth 3, tricky
 en-passant and promotion positions, SAN, mate, stalemate, draws, mouse and keyboard
 input, dialogs, the engine thread, hints, undo during search, UCI, an invalid UCI
 file and the fallback engine.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` builds and tests the project on every push and pull
+request:
+
+- **Linux** — Ubuntu 24.04, GCC and the distribution Qt 6.
+- **Windows** — MSYS2 MINGW64 with the same toolchain used locally.
+
+Both jobs run the full `ctest` suite, run the game once to capture a screenshot as
+a smoke test, and upload a ready-to-run bundle as a workflow artifact. Pushing a tag
+such as `v1.0.0` additionally publishes a GitHub release with portable Windows and
+Linux archives.
+
+To grab a build without running anything locally, open
+[the Actions tab](https://github.com/nkralev76-hue/retro-chess-qt/actions) and
+download `RetroChess-windows-x64` or `RetroChess-linux-x64` from a successful run.
 
 ## Layout
 

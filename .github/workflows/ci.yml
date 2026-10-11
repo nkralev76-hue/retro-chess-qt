@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux · GCC · Qt 6
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build \
+            qt6-base-dev qt6-base-dev-tools \
+            libgl1-mesa-dev libglx-dev
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Upload binary bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: RetroChess-linux-x64
+          path: |
+            build/RetroChess
+            build/engine_tests
+          if-no-files-found: error
+
+  windows:
+    name: Windows · MSYS2 · Qt 6
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-qt6-base
+            mingw-w64-x86_64-qt6-tools
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          cache: true
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Deploy Qt runtime
+        shell: msys2 {0}
+        run: |
+          mkdir -p RetroChess-win
+          windeployqt6 --release --no-translations \
+            --dir "$(pwd -W)/RetroChess-win" "$(pwd -W)/build/RetroChess.exe"
+          cp build/RetroChess.exe RetroChess-win/
+          cp /mingw64/bin/libgcc_s_seh-1.dll /mingw64/bin/libstdc++-6.dll \
+             /mingw64/bin/libwinpthread-1.dll RetroChess-win/
+
+      - name: Smoke test
+        shell: msys2 {0}
+        run: |
+          cd RetroChess-win
+          ./RetroChess.exe --qa-state midgame --screenshot smoke.png
+          test -s smoke.png
+
+      - name: Upload binary bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: RetroChess-windows-x64
+          path: RetroChess-win
+          if-no-files-found: error
+
+  release:
+    name: Release
+    needs: [linux, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: RetroChess-windows-x64
+          path: RetroChess-win
+      - uses: actions/download-artifact@v4
+        with:
+          name: RetroChess-linux-x64
+          path: RetroChess-linux-x64
+
+      - name: Create archive
+        run: |
+          chmod +x RetroChess-linux-x64/RetroChess
+          tar -czf RetroChess-linux-x64.tar.gz -C RetroChess-linux-x64 .
+          zip -qr RetroChess-windows-x64.zip RetroChess-win
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            RetroChess-windows-x64.zip
+            RetroChess-linux-x64.tar.gz
+          body: |
+            Portable build. The Windows bundle contains the Qt runtime and the
+            MinGW runtime, so it runs on a machine without Qt or MSYS2.
+
+            Stockfish is not bundled and is not required.

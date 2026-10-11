@@ -1,5 +1,6 @@
 # Retro Chess — C++ / Qt 6
 
+![Build](https://github.com/nkralev76-hue/retro-chess-qt/actions/workflows/ci.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Qt](https://img.shields.io/badge/Qt-6.2%2B-41c520)
 ![C++](https://img.shields.io/badge/C%2B%2B-17-00599c)
@@ -119,6 +120,17 @@ Stockfish се разпознава и ако е в системния PATH, д�
 Рокада, ан пасан, превръщане в четири фигури, шах, мат, пат, недостатъчен материал. Трикратно повторение и 50 хода без пешка или вземане се отчитат **автоматично** като реми; няма отделно предявяване на претенция. Няма часовник, онлайн игра или анализ с множество линии.
 
 Автоматичният запис използва локален `game.json` в стандартната папка за данни на приложението. Записът е атомарен чрез QSaveFile и се възстановява при следващо стартиране. PGN запазва историята; FEN копира текущата позиция. „Звук“ използва краткия системен звуков сигнал, не синтезиран 8-bit аудио двигател.
+
+## Непрекъсната интеграция
+
+`.github/workflows/ci.yml` компилира и тества проекта при всеки push и pull request:
+
+- **Linux** — Ubuntu 24.04, GCC и Qt 6 от дистрибуцията.
+- **Windows** — MSYS2 MINGW64 със същия toolchain, използван локално.
+
+И двата кода пускат пълния `ctest` набор, стартират играта веднъж за screenshotsмок тест и качват готова за пускане папка като артефакт от workflow-а. Push на tag като `v1.0.0` допълнително публикува GitHub release с преносими архиви за Windows и Linux.
+
+За готов build без локална работа отворете [таба Actions](https://github.com/nkralev76-hue/retro-chess-qt/actions) и свалете `RetroChess-windows-x64` или `RetroChess-linux-x64` от успешен run.
 
 ## Файлове
 
