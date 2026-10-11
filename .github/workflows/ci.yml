@@ -78,10 +78,11 @@ jobs:
       - name: Assemble portable bundle
         run: sh scripts/deploy-windows.sh build RetroChess-win
 
-      - name: Smoke test
+      - name: Smoke test without MSYS2 on PATH
         run: |
           cd RetroChess-win
-          ./RetroChess.exe --qa-state midgame --screenshot smoke.png
+          env PATH="/c/Windows/system32:/c/Windows" \
+            ./RetroChess.exe --qa-state midgame --screenshot smoke.png
           test -s smoke.png
 
       - name: Upload binary bundle
