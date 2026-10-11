@@ -4,7 +4,7 @@ build*/
 cmake-build-*/
 out/
 
-# Deployed Windows bundle (windeployqt output) and QA screenshots.
+# Deployed Windows bundle (scripts/deploy-windows.sh output) and QA screenshots.
 # Leading slash keeps these root-only so docs/*.png stay tracked.
 /RetroChess-win/
 /smoke.png

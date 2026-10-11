@@ -28,10 +28,10 @@ ctest --test-dir build --output-on-failure
 Готова за разпространение папка, без зависимост от Qt и MSYS2:
 
 ```sh
-cd build && windeployqt6 --release --no-translations RetroChess.exe
+sh scripts/deploy-windows.sh build RetroChess-win
 ```
 
-`windeployqt6` не копира MinGW runtime библиотеките — добавете ръчно `libgcc_s_seh-1.dll`, `libstdc++-6.dll` и `libwinpthread-1.dll` от `/mingw64/bin`, иначе програмата не се стартира.
+`windeployqt6` копира Qt библиотеките и плъгините, но не и MinGW runtime-а, нито трети страни библиотеки, с които самият Qt е свързан (icu, freetype, harfbuzz, libpng, zlib). Скриптът ги намира с `ldd` от активния MSYS2 префикс и ги копира, така че папката наистина е самостоятелна.
 
 > **Важно за Qt в `C:\Qt`:** официалният Qt Installer идва само с MinGW 8.1 (`C:\Qt\Tools`), докато Qt 6.6+ `mingw_64` библиотеките са компилирани с по-нов GCC. Комбинацията Qt 6.6 хедъри + GCC 8.1 не се компилира (`<filesystem>` пада). Използвайте Qt от MSYS2, за който GCC и Qt са от една и съща дистрибуция, или инсталирайте съответния MinGW през Maintenance Tool.
 

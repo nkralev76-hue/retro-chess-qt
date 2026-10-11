@@ -72,12 +72,13 @@ ctest --test-dir build --output-on-failure
 To produce a folder that runs on a machine without Qt or MSYS2:
 
 ```sh
-cd build && windeployqt6 --release --no-translations RetroChess.exe
+sh scripts/deploy-windows.sh build RetroChess-win
 ```
 
-`windeployqt6` does not copy the MinGW runtime libraries. Add `libgcc_s_seh-1.dll`,
-`libstdc++-6.dll` and `libwinpthread-1.dll` from `/mingw64/bin` manually, otherwise
-the executable fails to start.
+`windeployqt6` copies the Qt libraries and plugins, but not the MinGW runtime or the
+third party libraries Qt itself links against (icu, freetype, harfbuzz, libpng, zlib).
+The script resolves those from the active MSYS2 prefix with `ldd` and copies them in, so
+the resulting folder is genuinely self-contained.
 
 > **Note on the Qt installer:** it ships only MinGW 8.1 under `C:\Qt\Tools`, while
 > the Qt 6.6+ `mingw_64` binaries are built with a much newer GCC. That combination

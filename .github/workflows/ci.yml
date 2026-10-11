@@ -75,18 +75,10 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure
 
-      - name: Deploy Qt runtime
-        shell: msys2 {0}
-        run: |
-          mkdir -p RetroChess-win
-          windeployqt6 --release --no-translations \
-            --dir "$(pwd -W)/RetroChess-win" "$(pwd -W)/build/RetroChess.exe"
-          cp build/RetroChess.exe RetroChess-win/
-          cp /ucrt64/bin/libgcc_s_seh-1.dll /ucrt64/bin/libstdc++-6.dll \
-             /ucrt64/bin/libwinpthread-1.dll RetroChess-win/
+      - name: Assemble portable bundle
+        run: sh scripts/deploy-windows.sh build RetroChess-win
 
       - name: Smoke test
-        shell: msys2 {0}
         run: |
           cd RetroChess-win
           ./RetroChess.exe --qa-state midgame --screenshot smoke.png
