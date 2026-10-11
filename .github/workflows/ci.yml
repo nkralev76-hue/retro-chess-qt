@@ -45,7 +45,7 @@ jobs:
           if-no-files-found: error
 
   windows:
-    name: Windows · MSYS2 · Qt 6
+    name: Windows · MSYS2 UCRT64 · Qt 6
     runs-on: windows-2022
     defaults:
       run:
@@ -53,21 +53,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: msys2/setup-msys2@v2
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           update: true
-          install: >-
-            mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-qt6-base
-            mingw-w64-x86_64-qt6-tools
-
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
           cache: true
+          install: >-
+            mingw-w64-ucrt-x86_64-toolchain
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-qt6-base
+            mingw-w64-ucrt-x86_64-qt6-tools
 
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
@@ -85,8 +82,8 @@ jobs:
           windeployqt6 --release --no-translations \
             --dir "$(pwd -W)/RetroChess-win" "$(pwd -W)/build/RetroChess.exe"
           cp build/RetroChess.exe RetroChess-win/
-          cp /mingw64/bin/libgcc_s_seh-1.dll /mingw64/bin/libstdc++-6.dll \
-             /mingw64/bin/libwinpthread-1.dll RetroChess-win/
+          cp /ucrt64/bin/libgcc_s_seh-1.dll /ucrt64/bin/libstdc++-6.dll \
+             /ucrt64/bin/libwinpthread-1.dll RetroChess-win/
 
       - name: Smoke test
         shell: msys2 {0}
