@@ -1,4 +1,4 @@
-name: CI
+﻿name: CI
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
     name: Linux · GCC · Qt 6
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install build dependencies
         run: |
@@ -36,7 +36,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure
 
       - name: Upload binary bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: RetroChess-linux-x64
           path: |
@@ -51,7 +51,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Clean stale MSYS2 folder
         if: runner.os == 'Windows'
@@ -98,7 +98,7 @@ jobs:
           test -s smoke.png
 
       - name: Upload binary bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: RetroChess-windows-x64
           path: RetroChess-win
@@ -112,11 +112,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: RetroChess-windows-x64
           path: RetroChess-win
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: RetroChess-linux-x64
           path: RetroChess-linux-x64
