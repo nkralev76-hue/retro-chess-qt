@@ -53,6 +53,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Clean stale MSYS2 folder
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # setup-msys2 refuses to install when the target folder already exists.
+          # GitHub images can ship a leftover msys64 here, which aborts the job.
+          $p = Join-Path $env:RUNNER_TEMP 'msys64'
+          if (Test-Path -LiteralPath $p) {
+            Write-Host "Removing stale MSYS2 at $p"
+            Remove-Item -LiteralPath $p -Recurse -Force
+          }
+
       - name: Set up MSYS2
         uses: msys2/setup-msys2@v2
         with:
