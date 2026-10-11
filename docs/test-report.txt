@@ -1,0 +1,46 @@
+ФИНАЛНА ПРОВЕРКА — Retro Chess C++ / Qt
+
+Системата за проверка е Linux (Amazon Linux 2023), Release build.
+Qt 6.10.1
+g++ (GCC) 11.5.0 20240719 (Red Hat 11.5.0-5)
+cmake version 3.22.2
+
+Компилация на играта: успешна.
+Конфигурация без тестове (BUILD_TESTING=OFF): успешна.
+
+Test project /data/retro-chess-qt/build
+    Start 1: chess_rules_and_search
+1/2 Test #1: chess_rules_and_search ...........   Passed    0.35 sec
+    Start 2: native_interface
+2/2 Test #2: native_interface .................   Passed    3.99 sec
+
+100% tests passed, 0 tests failed out of 2
+
+Total Test time (real) =   4.35 sec
+
+Qt интерфейс — подробности:
+PASS   : UiTest::initTestCase()
+PASS   : UiTest::playAndMate()
+PASS   : UiTest::draws()
+PASS   : UiTest::specialMoves()
+PASS   : UiTest::mouseAndKeyboard()
+PASS   : UiTest::newDialogAndPromotion()
+PASS   : UiTest::threadedAiAndUndo()
+PASS   : UiTest::persistence()
+PASS   : UiTest::hintAndFen()
+PASS   : UiTest::cleanupTestCase()
+Totals: 10 passed, 0 failed, 0 skipped, 0 blacklisted, 3950ms
+
+Stockfish / UCI — официален Stockfish 17.1, Linux AVX2:
+Stockfish: d8h4 (mate), depth 245, nodes 7351
+Missing UCI engine falls back to built-in C++ AI.
+UCI cancellation passed.
+ALL UCI TESTS PASSED
+
+
+Изгледите на начална позиция, партия с избрана фигура, настройки,
+помощ, превръщане, мат, мислене, FEN и минимален прозорец са
+рендерирани от реалното Qt приложение и визуално проверени.
+
+Windows и macOS не са компилирани или тествани тук.
+Няма измерен Elo рейтинг. Stockfish и Qt бинарни файлове не са в архива.

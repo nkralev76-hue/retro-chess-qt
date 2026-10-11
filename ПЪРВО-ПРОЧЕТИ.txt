@@ -1,0 +1,12 @@
+Първо отворете README.md (English) или README.bg.md (български).
+Това е изходен C++/Qt 6 проект, не готов Windows .exe.
+
+First read README.md (English) or README.bg.md (Bulgarian).
+This is a C++/Qt 6 source project, not a ready-to-run Windows .exe.
+
+Проверена компилация под Windows / Verified build on Windows (MSYS2 MINGW64 shell):
+
+  pacman -S --needed mingw-w64-x86_64-{toolchain,qt6-base,qt6-tools}
+  cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+  cmake --build build --parallel
+  ctest --test-dir build --output-on-failure

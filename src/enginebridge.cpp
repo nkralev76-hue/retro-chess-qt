@@ -1,0 +1,20 @@
+#include "enginebridge.h"
+#include <QProcess>
+#include <QElapsedTimer>
+#include <QCoreApplication>
+#include <QDir>
+#include <QFileInfo>
+#include <QStandardPaths>
+#include <QRegularExpression>
+#include <algorithm>
+namespace retro {
+QString findStockfish(){auto fromPath=QStandardPaths::findExecutable("stockfish");if(!fromPath.isEmpty())return fromPath;for(auto dir:{QCoreApplication::applicationDirPath(),QCoreApplication::applicationDirPath()+"/engines"})for(auto f:QDir(dir).entryInfoList({"stockfish*","Stockfish*"},QDir::Files))if(f.isExecutable())return f.absoluteFilePath();return {};}
+static AiReply stockfish(Chess game,SearchConfig config,std::shared_ptr<std::atomic_bool> cancel,const QString& path,int level,const QStringList& moves){AiReply out;out.engine="Stockfish / UCI";QProcess process;process.setProcessChannelMode(QProcess::MergedChannels);process.start(path,{});if(!process.waitForStarted(2500)){out.error="Не може да се стартира UCI двигателят.";return out;}QByteArray buffer;auto send=[&](const QString& s){process.write(s.toUtf8()+"\n");process.waitForBytesWritten(200);};auto cleanup=[&](){if(process.state()!=QProcess::NotRunning){send("quit");if(!process.waitForFinished(300)){process.kill();process.waitForFinished(500);}}};
+ auto waitToken=[&](const QByteArray& token,int ms){QElapsedTimer t;t.start();while(t.elapsed()<ms){if(cancel&&cancel->load())return false;process.waitForReadyRead(30);buffer+=process.readAll();if(buffer.contains(token)){buffer.clear();return true;}if(process.state()==QProcess::NotRunning)break;}return false;};
+ send("uci");if(!waitToken("uciok",3000)){cleanup();out.error="Липсва отговор uciok от двигателя.";return out;}int skills[]={0,2,6,11,16,20};send("setoption name Threads value 1");send("setoption name Hash value 64");send("setoption name Skill Level value "+QString::number(skills[std::clamp(level,1,5)]));send("ucinewgame");send("isready");if(!waitToken("readyok",3000)){cleanup();out.error="UCI двигателят не е готов.";return out;}
+ // Full move history preserves repetition information; a custom test FEN uses the fallback below.
+ bool fromStart=true;try{Chess check;for(auto code:moves){bool found=false;for(auto m:check.legal())if(QString::fromStdString(uci(m))==code){check.make(m);found=true;break;}if(!found){fromStart=false;break;}}if(check.fen()!=game.fen())fromStart=false;}catch(...){fromStart=false;}
+ send(fromStart?"position startpos"+(moves.isEmpty()?QString():" moves "+moves.join(' ')):"position fen "+QString::fromStdString(game.fen()));send("go movetime "+QString::number(config.milliseconds));QElapsedTimer timer;timer.start();bool stopSent=false;while(timer.elapsed()<config.milliseconds+5000){if(cancel&&cancel->load()){send("stop");cleanup();return out;}if(!stopSent&&timer.elapsed()>config.milliseconds+2000){send("stop");stopSent=true;}process.waitForReadyRead(30);buffer+=process.readAll();int end;while((end=buffer.indexOf('\n'))>=0){QByteArray line=buffer.left(end).trimmed();buffer.remove(0,end+1);if(line.startsWith("info ")){auto t=QString::fromUtf8(line).split(' ',Qt::SkipEmptyParts);for(int i=0;i+1<t.size();++i){if(t[i]=="depth")out.result.depth=t[i+1].toInt();if(t[i]=="nodes")out.result.nodes=t[i+1].toULongLong();}}if(line.startsWith("bestmove ")){auto code=line.split(' ').value(1);for(auto m:game.legal())if(QByteArray::fromStdString(uci(m))==code){out.result.move=m;break;}cleanup();if(!out.result.move.valid())out.error="UCI върна недопустим ход.";return out;}}if(process.state()==QProcess::NotRunning)break;}
+ cleanup();out.error="UCI двигателят не върна ход навреме.";return out;}
+AiReply computeMove(Chess game,SearchConfig config,std::vector<uint64_t> keys,std::shared_ptr<std::atomic_bool> cancel,QString path,int level,QStringList moves){QString error;if(!path.isEmpty()){auto result=stockfish(game,config,cancel,path,level,moves);if(result.result.move.valid()||(cancel&&cancel->load()))return result;error=result.error;}auto search=std::make_unique<Search>();return {search->bestMove(game,config,keys,cancel),"C++ AI",error};}
+}

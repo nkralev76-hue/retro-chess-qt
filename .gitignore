@@ -1,0 +1,57 @@
+# Build directories
+build/
+build*/
+cmake-build-*/
+out/
+
+# Deployed Windows bundle (windeployqt output) and QA screenshots.
+# Leading slash keeps these root-only so docs/*.png stay tracked.
+/RetroChess-win/
+/smoke.png
+/preview.png
+/qa/
+*.png.tmp
+
+# Qt / CMake generated
+*_autogen/
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+CMakeLists.txt.user
+cmake_install.cmake
+CMakeCache.txt
+cmake_install.cmake.in
+CTestTestfile.cmake
+Testing/
+install_manifest.txt
+compile_commands.json
+.ninja_deps
+.ninja_log
+build.ninja
+.qt/
+
+# Compiled binaries and objects
+*.exe
+*.dll
+*.a
+*.lib
+*.o
+*.obj
+*.d
+*.pdb
+*.ilk
+*.exp
+
+# Editors / IDE
+*.user
+*.log
+.vscode/
+.idea/
+*.swp
+*~
+.cache/
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
