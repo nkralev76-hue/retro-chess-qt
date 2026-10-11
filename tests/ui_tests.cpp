@@ -7,6 +7,8 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
+#include <QToolButton>
+#include <QMenu>
 using namespace retro;
 class UiTest:public QObject{
  Q_OBJECT
@@ -19,6 +21,7 @@ void newDialogAndPromotion(){MainWindow w(true);w.show();w.openNewGame();QTest::
 void threadedAiAndUndo(){MainWindow w(true);w.show();Settings s;s.cpu=true;s.level=2;w.newGame(s);w.submitCoordinate("e2e4");QTRY_COMPARE_WITH_TIMEOUT(w.plyCount(),2,12000);QVERIFY(!w.cpuBusy());w.undoMove();QCOMPARE(w.plyCount(),0);QCOMPARE(QString::fromStdString(w.position().fen()),QString(StartFen));s.level=5;w.newGame(s);w.submitCoordinate("d2d4");QTest::qWait(220);QVERIFY(w.cpuBusy());w.undoMove();QCOMPARE(w.plyCount(),0);QTest::qWait(400);QCOMPARE(w.plyCount(),0);}
 void persistence(){auto oldApp=QCoreApplication::applicationName(),oldOrg=QCoreApplication::organizationName();QCoreApplication::setOrganizationName("RetroChess-QA");QCoreApplication::setApplicationName("PersistenceTest");QStandardPaths::setTestModeEnabled(true);auto file=QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)+"/game.json";QFile::remove(file);std::string expected;{MainWindow w(false);Settings s;s.cpu=false;w.newGame(s);for(auto c:{"e2e4","e7e5","g1f3"})w.submitCoordinate(c);expected=w.position().fen();}{MainWindow w(false);QCOMPARE(w.plyCount(),3);QCOMPARE(w.position().fen(),expected);w.undoMove();QCOMPARE(w.plyCount(),2);}QFile::remove(file);QStandardPaths::setTestModeEnabled(false);QCoreApplication::setApplicationName(oldApp);QCoreApplication::setOrganizationName(oldOrg);}
 void hintAndFen(){MainWindow w(true);w.show();Settings s;s.cpu=false;w.newGame(s);w.requestHint();QTRY_VERIFY_WITH_TIMEOUT(!w.cpuBusy(),10000);QCOMPARE(w.plyCount(),0);QVERIFY(w.findChild<BoardWidget*>("board")->hint.valid());w.showFen();QTest::qWait(20);auto output=w.findChild<QTextEdit*>("fenOutput");QVERIFY(output);QCOMPARE(output->toPlainText(),QString(StartFen));}
+void engineSwitchKeepsGame(){MainWindow w(true);w.show();Settings s;s.cpu=true;s.human=1;s.level=1;s.stockfishPath="C:/nonexistent/stockfish";w.newGame(s);auto b=w.findChild<QToolButton*>("stockfishButton");QVERIFY(b);QCOMPARE(b->text(),QString("Stockfish ▾"));w.submitCoordinate("e2e4");QTRY_COMPARE_WITH_TIMEOUT(w.plyCount(),2,12000);auto before=w.plyCount();QVERIFY(before>0);QMetaObject::invokeMethod(b->menu(),"aboutToShow");auto actions=b->menu()->actions();QCOMPARE(actions.size(),2);QCOMPARE(actions.at(0)->text(),QString("Вграден C++ AI"));QVERIFY(actions.at(0)->isEnabled());QVERIFY(!actions.at(0)->isChecked());QCOMPARE(actions.at(1)->text(),QString("Stockfish / UCI  ✓  stockfish"));QVERIFY(actions.at(1)->isChecked());actions.at(0)->trigger();QTest::qWait(20);QCOMPARE(b->text(),QString("C++ AI ▾"));QCOMPARE(w.plyCount(),before);QVERIFY(!w.cpuBusy());QMetaObject::invokeMethod(b->menu(),"aboutToShow");actions=b->menu()->actions();QVERIFY(actions.at(0)->isChecked());QCOMPARE(actions.at(1)->text(),QString("Stockfish / UCI…"));QVERIFY(!actions.at(1)->isChecked());w.submitCoordinate("g1f3");QTRY_COMPARE_WITH_TIMEOUT(w.plyCount(),before+2,12000);QVERIFY(!w.cpuBusy());}
 };
 QTEST_MAIN(UiTest)
 #include "ui_tests.moc"

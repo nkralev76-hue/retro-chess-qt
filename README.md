@@ -130,6 +130,11 @@ folder next to it. No binary or neural network is bundled in this repository. Th
 connection is verified against official Stockfish 17.1. If the external engine cannot
 start or returns an illegal move, the game falls back to the built-in engine and says so.
 
+The footer button always names the engine that is currently active — `C++ AI ▾` or
+`Stockfish ▾`. Open it to pick the other one. Switching is immediate and **does not
+restart the game**: a running search is cancelled and the built-in engine simply takes
+the next turn, or the chosen engine does.
+
 ## Controls
 
 - **Mouse:** click your piece, then the target square.

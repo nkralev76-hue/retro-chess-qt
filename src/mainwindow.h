@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QTableWidget>
 #include <QFutureWatcher>
+#include <QToolButton>
 namespace retro {
 struct Settings {bool cpu=true;int human=1,level=3;QString stockfishPath;};
 struct Record{Move move;Undo undo;QString san;int color=1,captured=0;};
@@ -21,11 +22,11 @@ protected:bool eventFilter(QObject*,QEvent*)override;void closeEvent(QCloseEvent
 private:
  Chess game;Settings settings;std::vector<Record> records;std::vector<uint64_t> keys;std::vector<Move> legalMoves;
  BoardWidget* board=nullptr;QLabel *topPlayer,*levelLabel,*statusTitle,*statusDetail,*stateLabel,*moveLabel,*messageLabel,*whiteRole,*blackRole,*savedLabel,*engineLabel;
- QPushButton *undoButton,*hintButton,*soundButton;QLineEdit* coordinate;QTableWidget* log;QWidget* captureStrip;
+ QPushButton *undoButton,*hintButton,*soundButton;QLineEdit* coordinate;QTableWidget* log;QWidget* captureStrip;QToolButton* engineButton=nullptr;
  QString toast,outcome,engineName="C++ AI";int winner=0,selected=-1;Move hinted;bool flipped=false,busy=false,sound=false,testMode=false;quint64 generation=0;
  std::shared_ptr<std::atomic_bool> cancellation;QFutureWatcher<AiReply>* watcher=nullptr;
  void buildUi();void refresh();void updateState();void commit(Move move);void scheduleComputer();void search(bool hint);void cancelSearch();bool computerTurn()const;
  void promote(const std::vector<Move>& choices);void setMessage(const QString& text);void save();void restore();QString savePath()const;QString pgn()const;void exportPgn();
- void beep(const QString& kind);void chooseStockfish();
+ void beep(const QString& kind);void chooseStockfish();void setEngine(const QString& path,const QString& message);void rebuildEngineMenu();void syncEngineButton();
 };
 }
